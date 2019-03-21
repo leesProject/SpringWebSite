@@ -1,0 +1,387 @@
+package com.in.team2.controller.user;
+
+
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.in.team2.SpecialLetters;
+import com.in.team2.controller.annotation.LogInCheck;
+import com.in.team2.service.user.UserMsgService;
+import com.in.team2.vo.MsgVO;
+
+@Controller
+@Scope("prototype")
+public class UserMsgController{
+	
+	@Autowired
+	private UserMsgService userMsgService;
+	
+
+	@LogInCheck
+	@RequestMapping(value = "/Msg_showSMsgList")
+	public ModelAndView showSendedMsg(HttpServletRequest request,MsgVO msg){
+		
+		HttpSession session = request.getSession();
+		
+		
+		String userId = (String)session.getAttribute("userId");
+		
+		msg.setSenderId(userId);
+		if(msg.getPageNum()==0){
+			msg.setPageNum(1);
+		}
+		if(msg.getNumbs()==0){
+			msg.setNumbs(10);
+		}
+						
+		ModelAndView mav = new ModelAndView();	
+		userMsgService.showSendedMsg(msg);
+		
+		/*여기 문제가 삭제한 후 게시판으로 돌아가는데 n번 페이지에 게시물이 하나밖에 없을 경우, 빈 n 페이지로 돌아간다. 그러므로
+		 * msg.getResultSet()이 빈 경우, n-1번 페이지를 불러와야함.
+		 *  */
+		
+		if(msg.getResultSet().size()==0&&msg.getPageNum()>1){
+			msg.setPageNum(msg.getPageNum()-1);
+			userMsgService.showSendedMsg(msg);
+		}
+		
+		
+		mav.addObject("numbs",msg.getNumbs());
+		mav.addObject("dataNum",msg.getDataNum());
+		mav.addObject("pageNum",msg.getPageNum());
+		mav.addObject("msgList",msg.getResultSet());
+		mav.setViewName("/user/msg/l_smsg");
+		return mav;		
+	}
+	
+
+	@LogInCheck
+	@RequestMapping(value = "/Msg_showRMsgList")
+	public ModelAndView showReceivedMsg(HttpServletRequest request,MsgVO msg){
+		HttpSession session = request.getSession();
+		
+		
+		String userId = (String)session.getAttribute("userId");
+		
+		msg.setReceiverId(userId);
+		if(msg.getPageNum()==0){
+			msg.setPageNum(1);
+		}
+		if(msg.getNumbs()==0){
+			msg.setNumbs(10);
+		}
+		
+		
+		
+		ModelAndView mav = new ModelAndView();	
+		userMsgService.showReceivedMsg(msg);		
+		
+		
+		/*여기 문제가 삭제한 후 게시판으로 돌아가는데 n번 페이지에 게시물이 하나밖에 없을 경우, 빈 n 페이지로 돌아간다. 그러므로
+		 * msg.getResultSet()이 빈 경우, n-1번 페이지를 불러와야함.
+		 *  */
+		
+		if(msg.getResultSet().size()==0&&msg.getPageNum()>1){
+			msg.setPageNum(msg.getPageNum()-1);
+			userMsgService.showReceivedMsg(msg);
+		}
+		
+		mav.addObject("numbs",msg.getNumbs());
+		mav.addObject("dataNum",msg.getDataNum());
+		mav.addObject("pageNum",msg.getPageNum());
+		mav.addObject("msgList",msg.getResultSet());	
+		mav.setViewName("/user/msg/l_rmsg");
+		return mav;
+	}
+	
+	/*읽음 표시를 F에서 T로 업데이트 해야 하므로 리퀘스트는 포스트만 인정함*/
+
+	@LogInCheck
+	@RequestMapping(value = "/Msg_showRMsgDetail", method=RequestMethod.POST)
+	public ModelAndView showReceivedMsgDetail(HttpServletRequest request,MsgVO msg){		
+		HttpSession session = request.getSession();		
+		String userId = (String)session.getAttribute("userId");
+		msg.setReceiverId(userId);
+
+		
+		long pageNum=1;
+		long numbs=10;
+		
+		if(msg.getPageNum()!=0){
+			pageNum=msg.getPageNum();
+		}
+		if(msg.getNumbs()!=0){
+			numbs=msg.getNumbs();
+		}
+		
+		ModelAndView mav = new ModelAndView();	
+		userMsgService.showReceivedMsgDetail(msg);
+		
+		msg.setPageNum(pageNum);
+		msg.setNumbs(numbs);
+		
+		if(msg.getResultSet().size()!=0){
+			msg=(MsgVO)msg.getResultSet().get(0);
+			
+			
+			/*스페이스를 &nbsp;로 풀어주기!*/
+			msg.setMsgContent(msg.getMsgContent().replace(SpecialLetters.get("space"), "&nbsp;"));
+			
+			
+			mav.setViewName("/user/msg/l_rmsg_detail");
+			mav.addObject("msg",msg);
+		}
+		
+		else{
+			mav.addObject("msg","申し訳ございません、メールのローディングに失敗しました。後ほど、やり直してください。");
+			mav.addObject("url","/action/Msg_showRMsgList?pageNum="+msg.getPageNum());
+			mav.setViewName("/user/msg/l_msg_crud_r");			
+		}		
+			
+		return mav;		
+	}
+			
+	/*읽기 기능 밖에 없으므로 get만 인정함*/
+	@LogInCheck
+	@RequestMapping(value = "/Msg_showSMsgDetail", method=RequestMethod.GET)
+	public ModelAndView showSendedMsgDetail(HttpServletRequest request, MsgVO msg){
+		HttpSession session = request.getSession();		
+		String userId = (String)session.getAttribute("userId");
+		msg.setSenderId(userId);
+
+		
+		long pageNum=1;
+		long numbs=10;
+		
+		if(msg.getPageNum()!=0){
+			pageNum=msg.getPageNum();
+		}
+		if(msg.getNumbs()!=0){
+			numbs=msg.getNumbs();
+		}
+		
+		ModelAndView mav = new ModelAndView();
+		msg=userMsgService.showSendedMsgDetail(msg);
+		
+		
+		
+		/*msgNum이 0이면 읽기 실패!*/
+		if(msg!=null){
+			msg.setPageNum(pageNum);
+			msg.setNumbs(numbs);
+			
+			/*&nbsp;로 풀어주기!*/
+			msg.setMsgContent(msg.getMsgContent().replace(SpecialLetters.get("space"), "&nbsp;"));
+									
+			mav.addObject("msg",msg);
+			mav.setViewName("/user/msg/l_smsg_detail");
+		}
+		
+		else{
+			mav.addObject("msg","申し訳ございません、メールのローディングに失敗しました。後ほど、やり直してください。");
+			mav.addObject("url","/action/Msg_showSMsgList?pageNum=1");
+			mav.setViewName("/user/msg/l_msg_crud_r");			
+		}		
+		
+		return mav;
+	}
+		
+	@LogInCheck
+	@RequestMapping(value = "/Msg_deleteSMsg",method=RequestMethod.POST)
+	public ModelAndView deleteSendedMsg(HttpServletRequest request,MsgVO msg){
+		
+		
+		HttpSession session = request.getSession();
+		String userId = (String)session.getAttribute("userId");
+		
+		
+		msg.setSenderId(userId);
+		if(msg.getPageNum()==0){
+			msg.setPageNum(1);
+		}
+		if(msg.getNumbs()==0){
+			msg.setNumbs(10);
+		}
+		ModelAndView mav = new ModelAndView();		
+		
+		
+		
+		
+		int result=userMsgService.deleteSendedMsgDetail(msg);
+		if(result==0){
+			mav.addObject("msg","申し訳ございません、メールの削除に失敗しました。後ほど、やり直してください。");		
+		}else{
+			mav.addObject("msg","メールを削除しました！");			
+		}		
+		
+		mav.addObject("url","/action/Msg_showSMsgList?pageNum="+msg.getPageNum());
+		mav.setViewName("/user/msg/l_msg_crud_r");
+		return mav;
+	}
+	
+	@LogInCheck
+	@RequestMapping(value = "/Msg_deleteRMsg",method=RequestMethod.POST)
+	public ModelAndView deleteReceivedMsg(HttpServletRequest request, HttpServletResponse response,MsgVO msg){
+		HttpSession session = request.getSession();
+		String userId = (String)session.getAttribute("userId");								
+		msg.setReceiverId(userId);
+		if(msg.getPageNum()==0){
+			msg.setPageNum(1);
+		}
+		if(msg.getNumbs()==0){
+			msg.setNumbs(10);
+		}
+				
+		ModelAndView mav = new ModelAndView();				
+		
+		int result=userMsgService.deleteReceivedMsgDetail(msg);
+		if(result==0){
+			mav.addObject("msg","申し訳ございません、メールの削除に失敗しました。後ほど、やり直してください。");		
+		}else{
+			mav.addObject("msg","メールを削除しました！");			
+		}		
+		
+		mav.addObject("url","/action/Msg_showRMsgList?pageNum="+msg.getPageNum());
+		mav.setViewName("/user/msg/l_msg_crud_r");
+		return mav;		
+	}
+	
+	
+	@LogInCheck
+	@RequestMapping(value = "/Msg_createMsg", method=RequestMethod.POST)
+	public ModelAndView createMsg(HttpServletRequest request, HttpServletResponse response,MsgVO msg,BindingResult br,RedirectAttributes redirectAttributes){
+		HttpSession session = request.getSession();
+		String userId = (String)session.getAttribute("userId");
+		ModelAndView mav = new ModelAndView();
+		
+		
+		
+		msg.setSenderId(userId);
+		if(msg.getPageNum()==0){
+			msg.setPageNum(1);
+		}
+		if(msg.getNumbs()==0){
+			msg.setNumbs(10);
+		}				
+		
+		msgValidate(msg,br);
+		if(br.hasErrors()){
+			try{
+				response.sendRedirect("/jsp/user/msg/l_msg_create.jsp?pageNum="+msg.getPageNum());
+			}catch(Exception e){}
+			return null; 
+			
+		}
+		else{
+			
+			int result=userMsgService.createMsg(msg);
+			
+			if(result==-1){
+				mav.addObject("errorMsg","존재하지 않는 아이디입니다.");				
+				
+				/*파싱한 것 다시 원래대로 만들어서 파람으로 보내주기*/
+				msg.setMsgContent(msg.getMsgContent().replace("<br>","\r\n"));
+				msg.setMsgContent(msg.getMsgContent().replace(SpecialLetters.get("space")," "));
+				
+				
+				mav.addObject("msg",msg);
+				mav.setViewName("/user/msg/l_msg_create");
+			}	
+			else if(result==0){
+				/*파싱한 것 다시 원래대로 만들어서 파람으로 보내주기*/
+				msg.setMsgContent(msg.getMsgContent().replace("<br>","\r\n"));
+				msg.setMsgContent(msg.getMsgContent().replace(SpecialLetters.get("space")," "));				
+					
+				mav.addObject("msg",msg);
+				mav.addObject("errorMsg","죄송합니다. 메세지 전송에 실패하였습니다...다시 시도해 주세요");		
+				mav.setViewName("/user/msg/l_msg_create");
+			}else{
+				mav.addObject("msg","쪽지를 전송하였습니다!");
+				mav.addObject("url","/action/Msg_showRMsgList");
+				mav.setViewName("/user/msg/l_msg_crud_r");
+			}				
+			return mav;
+		}
+		
+				
+	}
+
+	
+
+	public void msgValidate(MsgVO msg, Errors error) {	
+		
+		if(msg==null){
+			error.reject("");
+		}
+				
+		if(msg.getReceiverId()==null){
+			error.rejectValue("receiverId","수신자 아이디 입력!");
+		}
+				
+		else if(msg.getReceiverId().length()>20){
+			error.rejectValue("receiverId","받는 사람 아이디가 너무 깁니다!");
+		}
+				
+		
+		if(msg.getMsgTitle()==null){
+			error.rejectValue("msgTitle","제목 입력!!");
+		}		
+		
+		else {	
+			
+			if(msg.getMsgTitle().length()>30){					
+				error.rejectValue("msgTitle","제목이 너무 깁니다!");
+			}
+			
+			else {
+				msg.setMsgContent(msg.getMsgContent().replace("<", "&lt;"));
+				msg.setMsgContent(msg.getMsgContent().replace(">", "&gt;"));
+			}
+		}
+		
+		
+		
+		
+		if(msg.getMsgContent()==null){
+			error.rejectValue("msgContent","내용 입력!");
+		}
+		else {
+			
+			int minus3=StringUtils.countOccurrencesOf(msg.getMsgContent(), "\r\n");			
+			int parseDifference = 3*minus3;
+			
+			if(msg.getMsgContent().length()-parseDifference>1000){
+				error.rejectValue("msgContent","내용이 너무깁니다!");
+			}
+			
+			
+			else {
+				msg.setMsgContent(msg.getMsgContent().replace("<", "&lt;"));
+				msg.setMsgContent(msg.getMsgContent().replace(">", "&gt;"));
+				msg.setMsgContent(msg.getMsgContent().replace("\r\n", "<br>"));				
+				/*&nbsp;는 너무 기니 내가 나름대로 파싱함 >{!;*/
+				msg.setMsgContent(msg.getMsgContent().replace(" ", SpecialLetters.get("space")));
+			}
+			
+		}
+		
+	
+		
+		// TODO Auto-generated method stub
+		
+	}
+}

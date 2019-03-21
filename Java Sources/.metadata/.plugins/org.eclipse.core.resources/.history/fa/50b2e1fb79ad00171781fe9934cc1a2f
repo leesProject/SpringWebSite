@@ -1,0 +1,343 @@
+<%@page import="com.in.team2.vo.AuctionVO"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@page import="com.in.team2.vo.CommentVO"%>
+<%@page import="java.util.List"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="com.in.team2.vo.PostVO"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+
+<script src='/jquery/jquery-3.2.1.js'></script>
+
+<!-- 관심상품 중복등록시 경고메시지 출력 -->
+<c:if test='${!empty myListError}'>
+<script>
+	alert('${myListError}');
+</script>
+</c:if>
+
+
+<body>
+
+
+
+
+<div>
+	<div id='menuDiv'>	
+		<jsp:include page="/jsp/menubar/menubar.jsp"></jsp:include>
+	</div>	
+	<div id='chat'>			
+		<jsp:include page="/jsp/chat/chat.jsp"></jsp:include>
+	</div>
+	
+	
+<!-- PostVO 변수 만들기 -->	
+<%PostVO detail = (PostVO)request.getAttribute("detail");%>	
+
+
+	<div id='content'>
+		<div style='height:40vh; width: 90%; margin-top: 5vh; margin-left: 5%;'>
+		<!-- 제목 div 시작 -->
+			<div style='height:5vh; width: 90.2%; border: 1px solid black;'>
+				<div style="float: left;width: 70%;"><a>제목:<%=detail.getPostTitle() %></a></div>
+				<div style="float: left;width: 29%;" align="right"><a>작성자: <%=detail.getUserId()%>	등록일:<%=detail.getRegDate() %></a></div>				
+			</div>
+		<!-- 제목 div end-->
+			
+		<!-- photo div start-->
+			<div style='height:40vh; width: 60%; border: 1px solid black; float: left'>
+							<img src="<%="/"+detail.getPostPhoto() %>" style='width: 100%;height: 40vh'>
+			</div>
+		<!-- photo div end-->
+			
+			
+		<!-- informatoin div start-->
+			<form id='auctionOrBuyNow' method='post'>
+				<input name='postNum' type="hidden" id='postNum' value='${param.postNum}'>
+			
+				<div style='display:table; height:40vh; width: 30%; border: 1px solid black; float: left'>
+					
+					<div style='display: table-row; width: 100%;'>
+						<div style='display: table-cell; width: 30%;'>
+							제조사: 
+						</div>
+						<div style='display: table-cell; width: 68%;'>
+							<input type="text" readonly value='<%=detail.getItemCategory()%>' style='width:98.5%; height: 4vh; '>
+						</div>						
+					</div>
+					
+					
+					<div style='display: table-row; width: 100%;'>
+						<div style='display: table-cell; width: 30%;'>
+							상품명: 
+						</div>
+						<div style='display: table-cell; width: 68%;'>
+							<input type="text" readonly value='<%=detail.getItemName() %>' style='width:99%; height: 4vh;'>
+						</div>						
+					</div>
+					
+					
+					<div style='display: table-row; width: 100%;'>
+						<div style='display: table-cell; width: 30%;'>
+							상품 등급: 
+						</div>
+						<div style='display: table-cell; width: 68%;'>
+							<input type="text" readonly value='<%=detail.getItemClass() %>' style='width:99%; height: 3vh;'>
+						</div>						
+					</div>
+					
+					
+					<div style='display: table-row; width: 100%;'>
+						<div style='display: table-cell; width: 30%;'>
+							현재 가격(원): 
+						</div>
+						<div style='display: table-cell; width: 68%;'>
+							<input id='itemCurPrice' name='itemCurPrice' type="text" readonly value='<%=detail.getItemCurPrice()%>' style='height: 3vh; width: 99%'>
+						</div>						
+					</div>
+					
+					
+					<div style='display: table-row; width: 100%;'>
+						<div style='display: table-cell; width: 40%;'>
+							입찰 만료일: 
+						</div>
+						<div style='display: table-cell; width: 58%;'>
+							<input type="text" name = 'itemExpireDate' readonly value='<%=detail.getItemExpireDate() %>' style='height: 3vh; width: 99%'>
+						</div>						
+					</div>
+					
+					<div style='display: table-row; width: 100%;'>
+						<div style='display: table-cell; width: 30%;'>
+							입찰 인상가: 
+						</div>
+						<div style='display: table-cell; width: 68%;'>
+							<input id = 'itemIncrease' name='itemIncrease' type="text" readonly value='<%=detail.getItemIncrease()%>' style='height: 3vh; width: 99%'>
+						</div>						
+					</div>
+					<input name='sellerId' type='hidden' value='<%=detail.getUserId()%>'>
+					
+					
+					<div>
+					<button id= 'showSAuctionList' type="button" style='width:80%; height: 3vh; float: left;'>입찰현황</button>
+					<%if(session.getAttribute("userId")!=null&&session.getAttribute("userId").equals(detail.getUserId())){ %>	
+								
+					<%} else if(session.getAttribute("userId")!=null&&!session.getAttribute("userId").equals("")){%>	
+					<button id= 'auctionBtn' type="button" style='width:80%; height: 3vh; float: left; display: inline;'>입찰하기</button>
+					<button id= 'auctionCancelBtn' type="button" style='width:80%; height: 3vh; float: left;'>입찰 취소</button>
+					<button id= 'myListBtn' type="button" style='width:80%; height: 3vh; float: left;'>관심상품 등록</button>
+					<%} %>	
+					</div>
+					
+				</div>
+			</form>
+		<!-- informatoin div ends-->
+		</div>
+		
+	<!-- post Content div start-->
+		<div style='width: 81.5%;  margin-top: 5vh; margin-left: 5%;'>		
+			<div class='postContentDiv' style="padding-top: 5vh;">		
+				<textarea class='postContentTextArea' readonly style="width: 99.3%; resize: none; display: none" ><%=detail.getPostContent()%></textarea>			
+			</div>			
+			
+			<script>
+				$('.postContentTextArea').ready(function(){
+					var contentText = $('.postContentTextArea').text();			
+					$('.postContentDiv').append(contentText.replace(/\r?\n/g,"<br>"));
+					relocateFooter();
+				})				
+			</script>
+			
+		</div>
+		
+		<div style='width: 100%; padding-top: 5vh;' align="center">			
+			<button type='button' style='margin-left: 0%;margin-top: 0.5vh' onclick="document.location.href='/action/S_post_showList'">돌아가기</button>
+			<%if(session.getAttribute("userId")!=null&&(session.getAttribute("userId").equals(detail.getUserId())||session.getAttribute("userId").equals("ADMIN"))){ %>	
+				<button type='button' class='postDelete' id='<%=detail.getPostNum()%>' style='margin-left: 0%;margin-top: 0.5vh'>삭제</button>	
+				<button type='button'  class='postModify' id='<%=detail.getPostNum()%>' style='margin-top: 0.5vh'>수정</button>	
+			<%}%>
+		</div>	
+	<!-- post Content div end-->
+		
+		
+	<!-- comment Content div start-->
+		<div style='margin-top: 5vh;' align="center">
+			
+			<!--댓글추가 폼 시작  -->
+			<form class='commentList' style='margin-left:-5.8%'>
+				<input name='postNum' type="hidden" value='${param.postNum}'>
+			 	<input name='commentNum' type="hidden" id='commentNum' value='0'>
+			 	
+			 	
+				<table style='width: 80.5%;'>	
+			<%for(int i=0;i<detail.getCommentList().size();i++){
+				 CommentVO comment = detail.getCommentList().get(i);%>
+	<tr style='width: 100%;'>
+						
+						<td style='width: 10%; border: 1px solid black;'>
+							<%--댓글작성자 아이디  --%>
+							<%=comment.getUserId() %>
+						</td>
+						
+						<td style='width: 70%; border: 1px solid black;'>
+							<!--댓글 내용  -->
+							<textarea readonly id="commentContent<%=comment.getCommentNum()%>" style='margin: 0px; width: 97%; height: 7vh; resize:none;'><%=comment.getCommentContent() %></textarea>
+						</td>
+						
+						<td style='width: 10%; border: 1px solid black;'>
+							<!-- 댓글 작성일 -->
+							<%=comment.getRegDate() %>
+						</td>
+	
+						
+							<td align="center" style='width: 10%;'>
+							<%if(session.getAttribute("userId")!=null&&session.getAttribute("userId").equals(comment.getUserId())){ %>
+								<button type='button'  class='commentModify' id='<%=comment.getCommentNum()%>' style='margin-bottom: 10%'>수정</button>	
+								<button type='button'  class='commentDelete' id='<%=comment.getCommentNum()%>' style='margin-bottom: 10%'>삭제</button>	
+								<%} else if(session.getAttribute("userId").equals("ADMIN")){%>
+							<button type='button'  class='commentDelete' id='<%=comment.getCommentNum()%>' style='margin-bottom: 10%'>삭제</button>	
+							</td>						
+							<%} %>
+						
+			</tr>			
+		<%} %>		
+		<tr>
+			<td align="center">
+				<input name="userId" type='text' readonly="readonly" value="${sessionScope.userId}">
+			</td>	
+			<td align="center">
+				<input id='commentContent' name="commentContent" type='text' style='width: 99%;' placeholder="댓글 내용입력하세요" >
+			</td>
+			<td align="center">
+				<button type='submit' formaction="/action/S_post_createComment" formmethod="post" >댓글 등록</button>		
+			</td>
+		</tr>	
+				</table>				
+		</form>
+		</div>	
+		<!-- comment Content div end-->			
+	</div>
+	<!-- content div ends-->
+		
+		
+	
+	<script>
+	
+	/* 게시물 삭제 */
+	$('.postDelete').click(function(){
+		$('#postNum').val($(this).attr('id'));
+			$('#auctionOrBuyNow').attr('action','/action/S_post_deletePost')
+			$('#auctionOrBuyNow').attr('method','post');
+			$('#auctionOrBuyNow').submit();
+	})
+	
+	
+	
+	
+	/* 입찰하기 */
+		$('#auctionBtn').click(function() { 
+			var itemCurPrice = Number($('#itemCurPrice').val());
+			var increasePrice = Number($('#itemIncrease').val());
+			var resultPrice = Number(itemCurPrice+increasePrice); 
+			
+			if(confirm(resultPrice+'원에 입찰하시겠습니까?')){
+		
+			/* 입찰하러 넘어가는 길 */
+				$('#auctionOrBuyNow').attr('action','/action/S_post_auction')
+			 	$('#auctionOrBuyNow').attr('method','post');
+			 	$('#auctionOrBuyNow').submit();
+						
+				alert(resultPrice+'원에 입찰되었습니다!');
+					
+				}else{
+					alert('입찰이 취소되었습니다.');
+				}
+			})
+				
+	/* 댓글 삭제 */
+			$('.commentDelete').click(function(){
+				$('#commentNum').val($(this).attr('id'));
+				$('.commentList').attr('action','/action/S_post_deleteComment')
+	 			$('.commentList').attr('method','post');
+	 			$('.commentList').submit();
+			})
+			
+			
+			
+			var flag = false;
+		
+	/* 댓글 수정; 한번 누르면 readonly 해제, 두번 누를때 DB수정*/
+			$('.commentModify').click(function(){
+				var id=$(this).attr('id');				
+				if(flag == false){
+				flag = true;
+					$('#commentContent'+id).attr('readonly',false);
+					
+				
+				}else{
+					flag = false;
+					$('#commentContent'+id).attr('readonly',true);
+					$('#commentNum').val(id);
+					$('#commentContent').val($('#commentContent'+id).val());				
+					$('.commentList').attr('action','/action/S_post_modifyComment')
+		 			$('.commentList').attr('method','post');
+		 			$('.commentList').submit(); 
+				}
+			})
+	
+	/* 본문수정폼으로 가기 */
+			
+			$('.postModify').click(function(){
+			$('#postNum').val($(this).attr('id'));
+			$('#auctionOrBuyNow').attr('action','/action/l_spost_UpdateView')
+ 			$('#auctionOrBuyNow').attr('method','post');
+ 			 $('#auctionOrBuyNow').submit();
+		})
+	/* 입찰 취소*/
+		 	$('#auctionCancelBtn').click(function(){
+			$('#auctionOrBuyNow').attr('action','/action/S_post_auctionCancel')
+ 			$('#auctionOrBuyNow').attr('method','post');
+ 			
+			alert('입찰을 취소하셨습니다.');
+			$('#auctionOrBuyNow').submit();
+		}) 
+		
+	/* 관심상품 등록 */
+		 	$('#myListBtn').click(function(){
+			$('#auctionOrBuyNow').attr('action','/action/User_addMyList')
+ 			$('#auctionOrBuyNow').attr('method','post');
+ 			
+			alert('관심상품에 등록되었습니다.');
+			$('#auctionOrBuyNow').submit();
+		}) 
+		
+		/* 입찰자현황보기 */
+		  	$('#showSAuctionList').click(function(){
+		 			
+		 			window.open("/jsp/post/s_post/p_spost_auctionList.jsp?postNum="+$('#postNum').val(),'name','width=300,height=500');
+
+		})  
+			
+		
+	</script>
+		
+		
+		
+		
+		
+		
+	<div id='commercial' align="center">		
+		<jsp:include page="/jsp/ad/ad.jsp"></jsp:include>
+	</div>				
+	<div id='footer' align="center">		
+		<jsp:include page="/jsp/footer/footer.jsp"></jsp:include>
+	</div>		
+	
+</div>
+</body>
+</html>

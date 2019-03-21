@@ -1,0 +1,162 @@
+<%@page import="com.in.team2.vo.MsgVO"%>
+<%@page import="java.util.ArrayList"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Insert title here</title>
+</head>
+
+<script src='/jquery/jquery-3.2.1.js'></script>
+
+<script>
+
+	var pageNum=1;
+	
+	
+
+
+	
+	
+	$(function(){
+		
+		$(document).ready(function(){
+			
+			alert('${errorMsg}');
+		})
+		
+		
+		
+		$('#createBtn').click(function(){
+			
+			if($('#receiverId').val()==''){
+				alert('受信の方のIDを入力してください。');
+			}
+			
+			else if($('#msgTitle').val()==''){
+				alert('タイトルを入力してください。');
+			}
+			
+			else if($('#msgTitle').val().length>30){
+				alert('タイトルは３０文字まで可能です。');
+			}
+			
+			else if($('#msgContent').val()==''){
+				alert('内容を入力してください。');
+			}
+			
+			else if($('#msgContent').val().length>1000){
+				alert('内容は１０００文字まで入力可能です。');
+			}
+			
+			else{
+				$('#createMsg').submit();
+			}
+			
+		})
+	})
+	
+	
+</script>
+<script type="text/javascript">
+ window.history.forward();
+ function noBack(){window.history.forward();}
+</script>
+
+<body onload="noBack();" onpageshow="if(event.persisted) noBack();" onunload="">
+
+<div>
+	<div id='menuDiv'>	
+		<jsp:include page="/jsp/menubar/menubar.jsp"></jsp:include>
+	</div>	
+	<div id='chat'>			
+		<jsp:include page="/jsp/chat/chat.jsp"></jsp:include>
+	</div>
+	
+	
+	
+	
+	
+	
+	
+	<div id='content'>
+		
+		
+		
+		
+		
+		<div>
+			<button id='showRMsgList'>받은 쪽지</button>
+			<button id='showSMsgList'>보낸 쪽지</button>
+		</div><br>
+		
+		<script>
+		$('#showRMsgList').click(function(){
+			if(confirm('받은 쪽지 게시판으로 이동하시겠습니까?입력 내용이 지워집니다!')){
+				document.location.href='/action/Msg_showRMsgList';
+			}
+		})
+		
+		
+		$('#showSMsgList').click(function(){
+			if(confirm('보낸 쪽지 게시판으로 이동하시겠습니까?입력 내용이 지워집니다!')){
+				document.location.href='/action/Msg_showSMsgList';
+			}
+		})
+		</script>
+			
+			
+			
+			
+			
+			
+		
+		<div>
+			<form id='createMsg' action='/action/Msg_createMsg' method='post'>
+			받는 사람:<input type='text' id= 'receiverId' name='receiverId' value='${msg.receiverId }' maxlength="20">	<br>
+			제목:<input type='text' id='msgTitle' name='msgTitle' maxlength="30" value='${msg.msgTitle}'><br>
+			메세지 내용:<br>
+			
+			<textarea name='msgContent' id='msgContent' maxlength="1000" style='width: 98%;height: 60vh; resize: none;' onkeyup="countLetters(this)" onload="countLetters(this)">${msg.msgContent}</textarea>
+			<div style='display: table; width: 100%'>
+				<div style='display: table-row; width: 100%;'>
+					<div style='display: table-cell; width: 50%;'>
+						<a id='numOfLetters'></a>
+					</div>
+					<div style='display: table-cell; width: 50%;' align="right">
+						<button type='button' id='createBtn'> 보내기</button>
+					</div>
+				</div>				
+			</div>
+			</form>
+		</div>		
+	</div>
+		<!-- content div ends-->
+		
+	
+	<script>
+	function countLetters(textArea){
+		var length=textArea.value.length;
+		var numOfLetters = document.getElementById('numOfLetters');
+		numOfLetters.innerHTML=String(length)+"자";
+	}
+	</script>
+		
+		
+		
+		
+		
+		
+		
+	<div id='commercial' align="center">		
+		<jsp:include page="/jsp/ad/ad.jsp"></jsp:include>
+	</div>				
+	<div id='footer' align="center">		
+		<jsp:include page="/jsp/footer/footer.jsp"></jsp:include>
+	</div>	
+	
+</div>
+
+</body>
+</html>

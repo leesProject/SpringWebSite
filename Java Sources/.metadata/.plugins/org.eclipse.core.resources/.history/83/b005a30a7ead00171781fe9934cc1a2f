@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  
+  
+<mapper namespace="macro">	
+	
+	<!-- 판매 게시판의 게시글 만료 7일 경과 후 SEL_POST에서 삭제 -->
+	<delete id='deleteExpiredSellPost'>
+		<!-- DELETE FROM SELL_POST WHERE MSG_SENT='T' AND ITEM_EXPIREDATE+7 <![CDATA[<=]]> CAST(SYSDATE as TIMESTAMP) -->
+	 	DELETE FROM SELL_POST WHERE MSG_SENT='T' AND ITEM_EXPIREDATE + INTERVAL '1' hour  <![CDATA[<=]]> CAST(SYSDATE as TIMESTAMP)
+	 
+	</delete>
+	
+	
+	
+	<!-- 판매 게시판의 게시글 만료 시 자동으로 판매자, 구매자에게 쪽지보내기 -->
+	<select id="informSellerAndBuyer" statementType="CALLABLE">
+	{CALL
+			DECLARE 
+			
+				CURSOR V_CUR IS SELECT * FROM SELL_POST WHERE MSG_SENT='F' AND ITEM_EXPIREDATE <![CDATA[<=]]> CAST(SYSDATE as TIMESTAMP);
+			
+				V_REFCUR SYS_REFCURSOR;
+				V_SELLER	VARCHAR2(60);
+				V_BUYER		VARCHAR2(60);
+				V_CNT	NUMBER;	
+
+			BEGIN
+				FOR I IN V_CUR LOOP
+						
+					OPEN V_REFCUR FOR SELECT SELLER_ID, BUYER_ID FROM AUCTION WHERE POST_NUM=I.POST_NUM;
+					V_CNT:=0;
+					LOOP
+						FETCH V_REFCUR INTO V_SELLER, V_BUYER;
+			            EXIT WHEN V_REFCUR%NOTFOUND;			
+						
+						INSERT INTO RECEIVED_MSG(MSG_NUM,MSG_TITLE,MSG_CONTENT,MSG_CHECK,REG_DATE,SENDER_ID,RECEIVER_ID) VALUES(RECEIVED_MSG_SEQ.NEXTVAL,'입찰 만료 안내','회원님께서 입찰하신 '||I.ITEM_NAME||'의 입찰 만료를 알려드립니다.','F',SYSDATE,'ADMIN',V_BUYER);
+						<!-- 구매자에게 메세지 보내기 -->
+						
+						V_CNT:=V_CNT+1;
+					END LOOP;
+					
+					
+					
+					IF V_CNT=0 THEN
+						INSERT INTO RECEIVED_MSG(MSG_NUM,MSG_TITLE,MSG_CONTENT,MSG_CHECK,REG_DATE,SENDER_ID,RECEIVER_ID) VALUES(RECEIVED_MSG_SEQ.NEXTVAL,'판매 만료 안내','회원님께서 판매 등록하신 '||I.ITEM_NAME||'가 입찰 되지 않은 채 판매가 만료되었음을 알려드립니다.','F',SYSDATE,'ADMIN',I.USER_ID);
+						<!-- 판매자에게 메세지 보내기 -->
+					ELSE 
+						INSERT INTO RECEIVED_MSG(MSG_NUM,MSG_TITLE,MSG_CONTENT,MSG_CHECK,REG_DATE,SENDER_ID,RECEIVER_ID) VALUES(RECEIVED_MSG_SEQ.NEXTVAL,'판매 만료 안내','회원님께서 판매 등록하신 '||I.ITEM_NAME||'의 판매가 만료되었음을 알려드립니다. 입찰자 확인은 '||TO_CHAR(I.ITEM_EXPIREDATE, 'YYYY년MM월DD일HH24시MI분')||' 까지 가능하니 이점 유의바랍니다.','F',SYSDATE,'ADMIN',I.USER_ID);
+						<!-- 판매자에게 메세지 보내기 -->
+					END IF;					
+			
+			
+					UPDATE SELL_POST SET MSG_SENT='T' WHERE POST_NUM=I.POST_NUM;
+					<!-- 입찰 기간이 만료되면 판매자, 구매자에게 만료 안내 메세지를 보냄 -->
+			
+					IF V_CNT!=0 THEN
+						INSERT INTO MARKET_PRICE(ITEM_CATEGORY,ITEM_NAME,ITEM_CLASS,ITEM_CURPRICE,SOLD_DATE) VALUES(I.ITEM_CATEGORY,I.ITEM_NAME,I.ITEM_CLASS,I.ITEM_CURPRICE,I.ITEM_EXPIREDATE);
+						<!-- 입찰 기간이 만료되면 시세 테이블에 집어넣기 -->
+					END IF;	
+					
+					CLOSE V_REFCUR;
+				END LOOP;
+			
+			END}
+	</select>
+	
+	
+	
+	
+	
+	
+    
+</mapper>
+

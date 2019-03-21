@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 여기는 매핑할 자바파일의 풀패키지명을 적어준다 -->
+<mapper namespace="JH">
+    <!-- <insert id="insertTest" parameterType="com.in.team2.vo.UserVO">
+    	INSERT INTO TEST VALUES(#{userId},TEST_SEQ.NEXTVAL,#{userPw},#{userName},#{userEmail},#{userPhone},SYSDATE,null)
+    </insert> -->
+	
+<!-- 판매 게시판 리스트 출력 -->
+	<select id="spostList" parameterType="com.in.team2.vo.PostVO" resultType="com.in.team2.vo.PostVO">
+		SELECT *
+		FROM SELL_POST
+		WHERE ITEM_EXPIREDATE <![CDATA[>]]> CAST(SYSDATE as TIMESTAMP)
+		ORDER BY REG_DATE DESC
+	</select>
+
+<!--특정게시물 상세보기 -->
+		<select id="showDetail" parameterType="com.in.team2.vo.PostVO" resultType="com.in.team2.vo.PostVO">
+			SELECT * 
+			FROM Sell_post 
+			WHERE POST_NUM = #{postNum} <!-- AND ITEM_EXPIREDATE <![CDATA[>]]> CAST(SYSDATE as TIMESTAMP) -->
+		</select>	
+
+
+<!-- 판매게시판 입력 -->
+	<insert id="spostInsert" parameterType="com.in.team2.vo.PostVO" >
+	 INSERT INTO SELL_POST (POST_NUM, POST_TITLE, 
+	 						POST_CONTENT, 
+	 						POST_PHOTO, 
+	 						REG_DATE, 
+	 						ITEM_CATEGORY, 
+	 						ITEM_NAME, 
+	 						ITEM_CLASS, 
+	 						ITEM_CURPRICE, 
+	 						ITEM_INCREASE, 
+	 						ITEM_EXPIREDATE, 
+	 						MSG_SENT, 
+	 						USER_ID)
+
+      VALUES (	SELL_POST_SEQ.NEXTVAL, 
+      			#{postTitle}, 
+      			#{postContent}, 
+      			#{postPhoto},
+      			SYSDATE, 
+      			#{itemCategory}, 
+      			#{itemName}, 
+      			#{itemClass}, 
+      			#{itemCurPrice}, 
+      			#{itemIncrease}, 
+      			<!-- SYSDATE+7,  -->
+      			CAST(SYSDATE as TIMESTAMP) + INTERVAL '1' hour,
+      			'F', 
+      			#{userId})
+      
+	</insert>
+	
+
+<!-- 판매게시물 수정 -->
+	<update id="spostUpdate" parameterType="com.in.team2.vo.PostVO">
+		UPDATE SELL_POST
+		
+		SET POST_TITLE = #{postTitle},
+			ITEM_CATEGORY = #{itemCategory}, 
+			ITEM_NAME = #{itemName}, 
+			ITEM_CLASS = #{itemClass},
+			POST_CONTENT = #{postContent},
+			POST_PHOTO = #{postPhoto}
+		
+		WHERE POST_NUM = #{postNum}
+
+	</update>
+
+	
+<!--판매게시물 삭제  -->
+		<delete id="spostDelete" parameterType="com.in.team2.vo.PostVO">
+			DELETE
+			FROM SELL_POST
+			WHERE POST_NUM = #{postNum}
+		</delete>
+		
+<!-- 댓글 리스트 받아오기 -->
+	<select id="commentList" parameterType="com.in.team2.vo.CommentVO" resultType="com.in.team2.vo.CommentVO">
+			SELECT *
+			FROM SELL_COMMENT
+			WHERE POST_NUM=#{postNum}
+			ORDER BY POST_NUM DESC
+	</select>
+
+<!-- 댓글 추가 -->
+	<insert id="addComment" parameterType="com.in.team2.vo.CommentVO">
+	
+		INSERT INTO SELL_COMMENT (COMMENT_NUM, 
+									COMMENT_CONTENT, 
+									REG_DATE, 
+									USER_ID, 
+									POST_NUM)
+
+		VALUES (SELL_COMMENT_SEQ.NEXTVAL, 
+				#{commentContent},
+				SYSDATE, 
+				#{userId},
+				#{postNum})
+	</insert>
+<!-- 댓글삭제 -->
+	<delete id="deleteComment" parameterType="com.in.team2.vo.CommentVO">
+	
+		DELETE
+		FROM SELL_COMMENT
+		WHERE COMMENT_NUM = #{commentNum}
+
+	</delete>
+<!-- 댓글 수정 -->
+	<update id="modifyComment" parameterType="com.in.team2.vo.CommentVO">
+	
+		UPDATE SELL_COMMENT
+		SET COMMENT_CONTENT= #{commentContent}
+		WHERE COMMENT_NUM = #{commentNum}
+	</update>
+
+<!-- 입찰하기 -->
+
+
+	<select id='postAuction' statementType="CALLABLE" parameterType="com.in.team2.vo.AuctionVO">
+	{call
+		DECLARE 
+			V_NUM NUMBER:=0;
+		BEGIN
+			UPDATE AUCTION SET ITEM_CURPRICE = #{itemCurPrice}+#{itemIncrease}, AUCTION_CNT=AUCTION_CNT+1 WHERE POST_NUM= #{postNum}   AND ITEM_CURPRICE<![CDATA[<=]]>#{itemCurPrice} AND BUYER_ID = #{buyerId} AND ITEM_EXPIREDATE <![CDATA[>]]> CAST(SYSDATE as TIMESTAMP);
+			V_NUM:=SQL%ROWCOUNT;
+			IF V_NUM = 0 THEN
+				INSERT INTO AUCTION (BUYER_ID, 
+							 POST_NUM, 
+							 ITEM_CURPRICE, 
+							 SELLER_ID,
+							 ITEM_EXPIREDATE,
+							 AUCTION_CNT)
+				VALUES (#{buyerId}, #{postNum}, #{itemCurPrice}+#{itemIncrease}, #{sellerId},#{itemExpireDate},1);
+				V_NUM:=SQL%ROWCOUNT;	
+			END IF;	
+			
+			IF V_NUM = 1 THEN
+				V_NUM:=0;		
+				UPDATE SELL_POST 
+				SET ITEM_CURPRICE = ITEM_CURPRICE+#{itemIncrease} 
+				WHERE POST_NUM = #{postNum} AND ITEM_CURPRICE=#{itemCurPrice} AND ITEM_EXPIREDATE <![CDATA[>]]> CAST(SYSDATE as TIMESTAMP);	
+				V_NUM:=	SQL%ROWCOUNT;		
+			END IF;	
+		END		
+	}
+	
+	
+	</select> 
+
+<!-- 입찰취소 -->
+	<select id="postAuctionCancel" statementType="CALLABLE" parameterType="com.in.team2.vo.AuctionVO">
+	{call
+		DECLARE
+			V_NUM NUMBER:=0;
+			V_AUCTION_CNT NUMBER:=0;
+			V_CURPRICE NUMBER:=0;
+			V_CUR SYS_REFCURSOR;
+			V_OBJ AUCTION%ROWTYPE;
+						
+			BEGIN
+					SELECT ITEM_CURPRICE INTO V_CURPRICE FROM AUCTION WHERE POST_NUM = #{postNum} AND BUYER_ID = #{buyerId};					
+					SELECT AUCTION_CNT INTO V_AUCTION_CNT FROM AUCTION  WHERE POST_NUM = #{postNum} AND BUYER_ID = #{buyerId};					
+					DELETE FROM AUCTION WHERE POST_NUM = #{postNum} AND BUYER_ID = #{buyerId};
+					V_NUM:=SQL%ROWCOUNT;
+															
+					OPEN V_CUR FOR 
+								SELECT * FROM AUCTION WHERE ITEM_CURPRICE <![CDATA[>]]> V_CURPRICE AND POST_NUM = #{postNum};					
+					
+					IF V_NUM=1 THEN
+						UPDATE SELL_POST SET ITEM_CURPRICE = ITEM_CURPRICE-#{itemIncrease}*V_AUCTION_CNT WHERE POST_NUM = #{postNum};
+						V_NUM:=SQL%ROWCOUNT;										
+					END IF;				
+					
+					IF V_NUM=1 THEN
+						LOOP						
+							FETCH V_CUR INTO V_OBJ;
+							EXIT WHEN V_CUR%NOTFOUND;				
+							UPDATE AUCTION SET ITEM_CURPRICE = ITEM_CURPRICE-#{itemIncrease}*V_AUCTION_CNT WHERE POST_NUM = #{postNum} AND BUYER_ID=V_OBJ.BUYER_ID;
+						END LOOP;							
+					END IF;
+				CLOSE V_CUR;				
+					
+			END	
+	}
+	</select>
+
+
+<!-- 관심게시물 등록 -->
+	<insert id="postAddMyList" parameterType="com.in.team2.vo.PostVO">
+		INSERT INTO MYLIST (BUYER_ID, POST_NUM, SELLER_ID)
+		VALUES (#{buyerId}, #{postNum}, #{sellerId})
+	</insert>
+
+<!-- 관심상품 리스트 보기 -->
+	<select id="postMyList" parameterType="com.in.team2.vo.PostVO" resultType="com.in.team2.vo.PostVO">
+		SELECT * FROM SELL_POST
+		WHERE POST_NUM IN (SELECT POST_NUM FROM MYLIST WHERE BUYER_ID = #{userId})
+		ORDER BY POST_NUM DESC
+	</select>
+
+<!-- 관심상품 삭제하기 -->
+	<delete id="postDeleteMyList" parameterType="com.in.team2.vo.AuctionVO">
+		DELETE 
+		FROM MYLIST
+		WHERE POST_NUM = #{postNum} AND BUYER_ID = #{buyerId}
+	</delete>
+
+<!-- 특정게시물에 입찰중인 사람들 목록 -->
+
+	<select id="showSellingList" parameterType="com.in.team2.vo.AuctionVO" resultType="com.in.team2.vo.AuctionVO">
+		SELECT ITEM_CURPRICE,BUYER_ID
+		FROM AUCTION ORDER BY ITEM_CURPRICE DESC
+	</select>
+
+<!-- 특정유저가 올린 구매게시물의 리스트 -->
+
+	<select id="spostMySellList" parameterType="com.in.team2.vo.PostVO" resultType="com.in.team2.vo.PostVO">
+	
+	SELECT *
+	FROM SELL_POST
+	WHERE USER_ID = #{userId}
+	ORDER BY POST_NUM DESC
+	</select>
+
+
+</mapper>
+
+
+

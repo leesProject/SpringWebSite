@@ -1,0 +1,57 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+
+<!DOCTYPE html PUBLIC>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<script src='./jquery-3.2.1.js'></script>
+
+
+<script>
+
+
+ $(function(){
+	 jQuery(window).bind(
+			    "beforeunload", 
+			    function() { 
+			        return confirm("Do you really want to close?") 
+			    }
+			)
+	 
+	/*  $(window).unload(function(e) {
+		 e.preventDefault();
+		 alert('!!!!');
+		 /* return "Handler for .unload() called."; */
+		});
+	 $(window).click(function(event){
+		 event.preventDefault();
+		 console.log(event.offsetX);
+		 
+	 }) */
+	 
+	/* var inFormOrLink;
+	$('a').on('click', function() { inFormOrLink = true; });
+	$('form').on('submit', function() { inFormOrLink = true; });
+
+	$(window).on("unload", function() { 
+	    return inFormOrLink ? "Do you really want to close?" : null; 
+	}) */
+})   
+
+
+</script>
+<body>
+111111111asfdasdf
+
+
+<%-- <form:form commandName="user">
+id:<form:input path='userId'/>
+
+</form:form> --%>
+
+</body>
+</html>

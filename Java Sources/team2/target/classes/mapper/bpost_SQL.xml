@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="bpost">
+    <!-- 01. 게시글 전체 목록 조회 -->
+    <select id="listAll" parameterType="com.in.team2.vo.PostVO" resultType="com.in.team2.vo.PostVO" >
+        <include refid="pagingHeader"></include>
+        SELECT * 
+		FROM BUY_POST 
+		<include refid="search"></include> 
+		ORDER BY post_num desc
+    <include refid="pagingFooter"></include>
+    </select>
+    
+    <!-- 2. 게시글 레코드 갯수 -->
+	<select id="countArticle" resultType="int">
+    	SELECT COUNT(*) FROM BUY_POST
+    	<include refid="search"></include>
+	</select>
+    
+	<sql id="search">
+   		<choose>
+       		<!-- 검색옵션이 전체 검색일 경우 -->
+        	<when test="searchOption == 'all'">
+            	WHERE item_Category like '%'||#{keyword}||'%' 
+            	OR item_Name like '%'||#{keyword}||'%' 
+            	OR post_Title like '%'||#{keyword}||'%' 
+            	OR post_Content like '%'||#{keyword}||'%' 
+            	OR user_Id like '%'||#{keyword}||'%'
+        	</when>
+        	<!-- 전체 검색이 아닐 경우 -->
+        	<otherwise>
+            	WHERE ${searchOption} like '%'||#{keyword}||'%'
+        	</otherwise>
+    	</choose>
+	</sql>
+	<sql id="pagingHeader">
+    	SELECT * FROM (
+        	SELECT ROWNUM AS rn, A.* FROM (
+	</sql>
+	<sql id="pagingFooter">
+        	) A
+    	) WHERE rn BETWEEN #{start} AND #{end}
+	</sql>
+	
+    
+    <!-- 03. 게시글 작성 -->
+    <insert id="create" parameterType="com.in.team2.vo.PostVO" >
+        INSERT INTO buy_post (
+         post_Num, 
+          post_Content, 
+            post_Photo, 
+            item_Category, 
+            item_Name,
+            item_Class, 
+            post_Title,
+            user_Id, 
+            reg_Date
+        ) VALUES (
+          BUY_POST_SEQ.NEXTVAL,
+          #{postContent},
+          #{postPhoto}, 
+          #{itemCategory},
+          #{itemName},
+          #{itemClass},
+          #{postTitle},
+          #{userId},
+          SYSDATE
+        )
+    </insert>
+    
+    <!--04. 게시글 상세보기 조회 -->
+    <select id="view" resultType="com.in.team2.vo.PostVO">
+        SELECT * FROM buy_post 
+        WHERE post_Num = #{postNum}
+    </select>
+    
+    <!-- 05. 게시글 수정처리 -->
+    <update id="update" parameterType="com.in.team2.vo.PostVO">
+        UPDATE buy_post SET 
+          post_Content = #{postContent}, 
+            post_Photo = #{postPhoto}, 
+            item_Category = #{itemCategory}, 
+            item_Name = #{itemName}, 
+            item_Class = #{itemClass}, 
+            post_Title = #{postTitle} 
+        WHERE post_Num = #{postNum}
+    </update>
+    
+    <!-- 06. 게시글 삭제처리 -->
+    <delete id="delete" parameterType="long">
+        DELETE FROM buy_post
+        WHERE post_Num = #{postNum}
+    </delete>
+    
+    <!-- 07. 댓글 목록 조회 -->
+    <select id="listComment" parameterType="long" resultType="com.in.team2.vo.CommentVO" >
+        
+        SELECT * 
+		FROM BUY_COMMENT
+		WHERE post_num = #{postNum}
+		ORDER BY comment_num desc
+    </select>
+    
+    <!-- 08. 댓글 등록 -->
+    <select id="Commentset" parameterType="com.in.team2.vo.CommentVO">
+        INSERT INTO BUY_COMMENT(
+          comment_Num, 
+          comment_Content, 
+            post_Num, 
+            user_Id, 
+            reg_Date
+        ) VALUES (
+          BUY_COMMENT_SEQ.NEXTVAL, 
+          #{commentContent}, 
+          #{postNum}, 
+          #{userId}, 
+          SYSDATE
+        )
+    </select>
+     <!-- 09. 댓글 수정처리 -->
+    <update id="Commentupdate" parameterType="com.in.team2.vo.CommentVO">
+        UPDATE BUY_COMMENT SET 
+          comment_Content = #{commentContent}
+        WHERE comment_Num = #{commentNum}
+    </update>
+    
+    <!-- 10. 댓글 삭제처리 -->
+    <delete id="Commentdelete" parameterType="com.in.team2.vo.CommentVO">
+        DELETE FROM BUY_COMMENT
+        WHERE comment_Num = #{commentNum}
+    </delete>
+    
+</mapper>
+

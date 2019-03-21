@@ -1,0 +1,114 @@
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="com.in.team2.vo.UserVO" %>	 
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<script src='/jquery/jquery-3.2.1.js'></script>
+<body>
+
+
+
+<div>
+	
+	<div id='menuDiv'>	
+		<jsp:include page="/jsp/menubar/menubar.jsp"></jsp:include>
+	</div>	
+	<div id='chat'>			
+		<jsp:include page="/jsp/chat/chat.jsp"></jsp:include>
+	</div>
+	
+	
+		
+			
+	<div id='content'>
+		<div style='width: 99.8%; height: 50vh;' align='center'>
+			<div style='margin-top: 30vh;'>
+			<div>	
+		 <form method="post" >
+				<div style="display: table; width: 40%;">	
+						<div style="display: table-row; ">
+							<div style="display: table-cell; ">
+								ID : 
+							</div>
+							<div style="display: table-cell;">
+								<input type='text' style="width: 99.8%; height: 2vh;" readonly="readonly" value="${user.userId }" name="userId">
+							</div>
+						</div>					
+						<div style="display: table-row;">
+							<div style="display: table-cell;">
+								お名前 : 
+							</div>
+							<div style="display: table-cell;">
+								<input type='text' style="width: 99.8%; height: 2vh;" readonly="readonly"  value="${user.userName }" name="userName"  >
+							</div>
+						</div>
+						<div style="display: table-row;">
+							<div style="display: table-cell;">
+								이메일 : 
+							</div>
+							<div style="display: table-cell;">
+								<input type="email" style="width: 99.8%; height: 2vh;" readonly="readonly"  value="${user.userEmail }" name="userEmail" >
+							</div>
+						</div>
+						<div style="display: table-row;">
+							<div style="display: table-cell;">
+								연락처 : 
+							</div>
+							<div style="display: table-cell;">
+								<input type="text" style="width: 99.8%; height: 2vh;" readonly="readonly"  value="${user.userPhone }" name="userPhone"  >
+							</div>
+						</div>			
+			</div>		
+			<div align="center">
+				<button type="submit" id='modifyBtn'  formaction="/action/User_modifyForm" style='margin-top:2vh;height:3vh;'>수정하기</button>
+				<button id='withdrawBtn' style='margin-top:2vh;height:3vh;'>탈퇴하기</button>
+				
+				
+				<!-- <button id='buyHistoryBtn' style='margin-top:2vh;height:3vh;'>구매이력</button>
+				<button id='sellHistoryBtn' style='margin-top:2vh;height:3vh;'>판매이력</button>	 -->	
+			</div>
+			</form>
+			</div>			
+			<script>
+				$('#withdrawBtn').click(function(){
+					if(confirm('정말로 탈퇴하시겠습니까?')){
+						window.open('/jsp/user/info/withdrawPopUp.jsp','popup',"toolbar=no, location=no, resizable=no, scrollbars=no, width=600, height=250, left=0, top=0")						
+					}
+				})
+			</script>
+			</div>	
+		</div>		
+	</div>
+			
+			
+			
+			
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<div id='commercial' align="center">		
+		<jsp:include page="/jsp/ad/ad.jsp"></jsp:include>
+	</div>				
+	<div id='footer' align="center">		
+		<jsp:include page="/jsp/footer/footer.jsp"></jsp:include>
+	</div>		
+	
+	
+		
+	
+	
+</div>
+
+</body>
+</html>

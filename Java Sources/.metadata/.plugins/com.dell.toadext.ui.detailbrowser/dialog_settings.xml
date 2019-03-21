@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="com.dell.toadext.oracle.nui.viewer.detail.OraQueryResultViewer">
+		<section name="f7266c7b-d0b9-4cdb-9753-deb2b7d66278#SENT_MSG">
+		</section>
+		<section name="f7266c7b-d0b9-4cdb-9753-deb2b7d66278#TEST_INSERT">
+			<item value="" key="where"/>
+			<list key="whereHistory">
+			</list>
+			<list key="hidden">
+			</list>
+			<list key="order">
+			</list>
+		</section>
+		<section name="f7266c7b-d0b9-4cdb-9753-deb2b7d66278#RECEIVED_MSG">
+		</section>
+	</section>
+</section>

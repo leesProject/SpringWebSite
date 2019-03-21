@@ -1,0 +1,166 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+
+<script src='/jquery/jquery-3.2.1.js'></script>
+
+<body>
+
+<div>
+	<div id='menuDiv'>	
+		<jsp:include page="/jsp/menubar/menubar.jsp"></jsp:include>
+	</div>	
+	<div id='chat'>			
+		<jsp:include page="/jsp/chat/chat.jsp"></jsp:include>
+	</div>
+		
+	
+	
+	<script>
+$(function(){
+	$(document).ready(function(){
+		$('#itemName').empty();
+		if($('#itemCategory').val()=="製造社選択"){			
+			
+		}
+		
+		else{
+			$.ajax({
+				url:'/action/returnItemName?itemCategory='+$("#itemCategory").val(),
+				
+				dataType:'xml',
+				success: function(data){
+					var itemNames = $($(data).find('result')).find('item');
+					var itemName=null;
+					for(i=0;i<itemNames.length;i++){
+						itemName=itemNames[i];
+						$('#itemName').append("<option>"+($(itemName).text()).trim()+"</option>");
+					}
+					
+					
+					
+				},
+				error: function(e){
+					console.log("ERROR! "+e.message)
+				}
+			})
+		}
+	})
+	
+	
+	
+	$('#itemCategory').change(function(){
+		$('#itemName').empty();
+		if($('#itemCategory').val()=="製造社選択"){			
+			
+		}
+		
+		else{
+			$.ajax({
+				url:'/action/returnItemName?itemCategory='+$("#itemCategory").val(),
+				
+				dataType:'xml',
+				success: function(data){
+					var itemNames = $($(data).find('result')).find('item');
+					var itemName=null;
+					for(i=0;i<itemNames.length;i++){
+						itemName=itemNames[i];
+						$('#itemName').append("<option>"+($(itemName).text()).trim()+"</option>");
+					}
+					
+					
+					
+				},
+				error: function(e){
+					console.log("ERROR! "+e.message)
+				}
+			})
+		}
+	})	
+	
+	
+	$('#itemName').change(function(){
+		if($('#itemName').val()!=null){
+		}
+	})
+	
+	$('#search').click(function(){
+		if($('#itemCategory').val()!="製造社選択"){
+			
+			$('#searchForm').submit();
+		}
+	})
+	
+})
+	
+</script>
+	
+	
+	
+	
+	
+	
+	<div id='content'>		
+		<form action='/action/MP_seacrhPrice' method='get' id='searchForm'>
+					<select id='itemCategory' name='itemCategory' style='width: 10%;height: 3vh;'>
+						<option selected="selected">製造社選択</option>
+						<option>SAMSUNG</option>
+						<option>APPLE</option>
+						<option>LG</option>
+					</select>
+					
+					<select id='itemName' name='itemName' style='width: 15%;height: 3vh;'>
+					</select>
+					
+					<select id='itemClass' name='itemClass' style='width: 10%;height: 3vh;'>
+						<option selected="selected">A</option>
+						<option>B</option>
+						<option>C</option>
+					</select>
+					
+										
+					<a>今日から</a>
+					
+					
+					<select name='searchInterval' style='width: 10%;height: 3vh;'>
+						<option value='week'>１週間</option>
+						<option value='month'>１ヶ月間</option>
+						<option value='3months'>３ヶ月間</option>
+						<option value='6months'>６ヶ月間</option>
+						<option value='year'>１年間</option>
+					</select>
+					
+					
+					<button type='button' id='search'>相場検索</button>
+				</form>	
+			
+		<div>
+			<h1>平均相場を見る</h1>
+		</div>
+	</div>
+	<!-- content div ends-->
+		
+			
+		
+		
+		
+		
+		
+		
+	<div id='commercial' align="center">		
+		<jsp:include page="/jsp/ad/ad.jsp"></jsp:include>
+	</div>				
+	<div id='footer' align="center">		
+		<jsp:include page="/jsp/footer/footer.jsp"></jsp:include>
+	</div>
+	
+	
+</div>
+
+</body>
+</html>

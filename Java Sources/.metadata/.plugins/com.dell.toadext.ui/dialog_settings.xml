@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="com.dell.toadext.view.connection.actions.LinkWithEditorAction">
+		<item value="true" key="active"/>
+	</section>
+	<section name="com.dell.toadext.editor.AbstractEditorExtension$HideResultSetAction">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.oracle.nui.viewer.detail.OraTableIndexesViewer">
+	</section>
+	<section name="com.dell.toadext.ui.console.actions.LockAction">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.ui.console.actions.ShowDataAction">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.oracle.nui.viewer.detail.OraTriggersViewer">
+	</section>
+	<section name="com.dell.toadext.view.monitor.AbstractConnectionMonitorView$LockAction">
+		<item value="false" key="active"/>
+	</section>
+	<section name="aliases_section">
+		<list key="aliases">
+		</list>
+		<list key="queryables">
+		</list>
+	</section>
+	<section name="com.dell.toadext.editor.outline.SqlOutlinePage$HideAnonymousBlocksAction">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.editor.outline.SqlOutlinePage$ShowParameterListAction">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.editor.outline.SqlOutlinePage$HideVariablesAction">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.ui.pages.ToadextOutlinePage$OutlineSortAction">
+		<item value="true" key="active"/>
+	</section>
+	<section name="com.dell.toadext.editor.outline.SqlOutlinePage$SortByNameAction">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.view.connection.view.handlers.GroupByDbHandler">
+	</section>
+	<section name="com.dell.toadext.ui.console.actions.ShowErrorsAction">
+		<item value="true" key="active"/>
+	</section>
+	<section name="com.dell.toadext.detailbrowser.AbstractColumnsViewer$ShowCommentAction">
+		<item value="true" key="active"/>
+	</section>
+	<section name="com.dell.toadext.ui.console.actions.ShowInputAction">
+		<item value="true" key="active"/>
+	</section>
+	<section name="com.dell.toadext.ui.console.DbConsoleView">
+		<section name="saveToFile">
+		</section>
+	</section>
+	<section name="com.dell.toadext.ui.quickdoc.QuickDocView$LinkWithSelectionAction">
+		<item value="true" key="active"/>
+	</section>
+	<section name="com.dell.toadext.editor.AbstractEditorExtension$RightAlignResultSet">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.view.history.actions.HideUnpinnedHistoryItemsAction">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.oracle.nui.viewer.detail.OraTableColumnsViewer">
+	</section>
+	<section name="com.dell.toadext.view.monitor.DbmsOutputView">
+		<section name="saveToFile">
+		</section>
+	</section>
+	<section name="com.dell.toadext.schemabrowser.actions.DisplayDescribeObjectEditorAction">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.schemabrowser.actions.LinkWithEditorAction">
+		<item value="true" key="active"/>
+	</section>
+	<section name="com.dell.toadext.view.monitor.SqlMonitorView">
+		<section name="saveToFile">
+		</section>
+	</section>
+	<section name="com.dell.toadext.oracle.nui.editor.OraSqlEditorExtension">
+		<section name="editorWeights">
+			<item value="1" key="rsWeight"/>
+			<item value="1" key="editorWeight"/>
+		</section>
+	</section>
+	<section name="com.dell.toadext.view.monitor.AbstractConnectionMonitorView$EnableAction">
+		<item value="true" key="active"/>
+	</section>
+	<section name="com.dell.toadext.detailbrowser.viewer.AbstractQueryResultViewer$SortColumnsAction">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.oracle.nui.viewer.detail.OraQueryResultViewer$1">
+		<section name="f7266c7b-d0b9-4cdb-9753-deb2b7d66278#LEE.SENT_MSG">
+			<item value=",,,,,,,," key="col.widths"/>
+		</section>
+		<section name="f7266c7b-d0b9-4cdb-9753-deb2b7d66278#LEE.RECEIVED_MSG">
+			<item value=",,,,,,,," key="col.widths"/>
+		</section>
+		<section name="f7266c7b-d0b9-4cdb-9753-deb2b7d66278#LEE.TEST_INSERT">
+			<item value=",," key="col.widths"/>
+		</section>
+	</section>
+	<section name="com.dell.toadext.editor.AbstractEditorExtension$BottomAlignResultSet">
+		<item value="false" key="active"/>
+	</section>
+	<section name="com.dell.toadext.ui.console.actions.ShowStandardLogsAction">
+		<item value="true" key="active"/>
+	</section>
+	<section name="com.dell.toadext.oracle.nui.viewer.detail.OraTableConstraintsViewer">
+	</section>
+	<section name="com.dell.toadext.detailbrowser.AbstractColumnsViewer$SortColumnsAction">
+		<item value="false" key="active"/>
+	</section>
+</section>

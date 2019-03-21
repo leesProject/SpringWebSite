@@ -1,0 +1,132 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html >
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+
+<script src="/jquery/jquery-3.2.1.js"></script>
+<script src="http://cdn.jsdelivr.net/jquery.validation/1.15.1/jquery.validate.min.js"></script>
+<script src="/jquery/jquery_validate_additionalREX.js"></script>
+
+
+
+
+
+<body id='withdrawPopUp'>
+	<div align="center">
+		<h3>ID,暗証番号、お名前を入力してください。</h3>
+	</div>
+<div>
+<form method="post" id='deleteForm'>	
+	<div style="display: table; width: 100%;" align="center">
+		<div style="display: table-row; ">
+			<div style="display: table-cell; ">
+				아이디:
+			</div>
+			<div style="display: table-cell;">
+				<input type='text' name="userId" style="width: 99.8%; height: 5vh;" >
+			</div>
+		</div>
+		<div style="display: table-row;">
+			<div style="display: table-cell;">
+				비밀번호:
+			</div>
+			<div style="display: table-cell;">
+				<input type='password' name="userPw" style="width: 99.8%; height: 5vh;" >
+			</div>
+		</div>				
+		<div style="display: table-row;">
+			<div style="display: table-cell;">
+				이름:
+			</div>
+			<div style="display: table-cell;">
+				<input type='text' name="userName" style="width: 99.8%; height: 5vh;" >
+			</div>
+		</div>
+											
+	</div>	
+		
+	<div align="center">
+		<button type='button'>탈퇴하기</button>
+	</div>
+</form>
+</div>	
+</body>
+
+
+
+<script>
+	$(function() {
+	    $('#deleteForm').validate({
+	        debug: false,
+	        onfocusout: false,
+	        rules: {
+	        	userId: {
+	                 required: true,
+	                 rangelength: [4, 20],
+	                 idRex: true 
+	             }, userPw: {
+	                 required: true,
+	                 rangelength: [6, 20],
+	                 pwRex:true
+	             },  userName: {
+	                 required: true,
+	                 rangelength: [2, 20],
+	                 nameRex: true
+	             }
+	        }, messages: {
+	        	userId: {
+	                 required: "아이디를 입력해주세요.",
+	                 rangelength: "아이디는 4자에서 20자까지만 유효합니다.",
+	                 idRex:'아이디는 대소영문자, 숫자, 한글만 가능합니다.'
+	             }, userPw: {
+	                 required: "비밀번호를 입력해주세요.",
+	                 rangelength: "비밀번호는 6자에서 20자까지만 유효합니다.",
+	                 pwRex: '비밀번호는 대소영문자, 숫자, 한글, 특수문자 !@#$%^&만 가능합니다.'
+	             }, userName: {
+	                 required: "성함을 입력해주세요.",
+	                 rangelength: "이름은 2자에서 20자까지만 유효합니다.",
+	                 nameRex:'이름은 대소영문자, 한글, 숫자만 가능합니다.'
+	             }	           
+	        }, errorPlacement: function(error, element) {
+	        	 error.insertAfter(element);	        	
+	        }
+	    });	
+	    
+	    
+	    
+	    
+	    $('button').click(function(){
+	    	var params = $("#deleteForm").serialize();
+	    	$.ajax({
+	    		url:'/action/User_delete',
+	    		type:'post',
+	    		data: params,
+	    		dataType:'xml',
+	    		success:function(data){
+	    			var result = $(data).find('result').text().trim();
+	    			result=Number(result);
+	    			console.log($(data).find('result').text().trim());
+	    			if(result==1){
+	    				opener.document.location.href="/jsp/main/p_main.jsp";
+	    				alert('회원 탈퇴에 성공하였습니다.');
+	    				window.close();
+	    				
+	    			}
+	    			else if(result==0){
+	    				alert('회원 탈퇴에 실패하였습니다.아이디, 비밀번호, 성함을 다시 확인해 주세요!');
+	    			}	 
+	    		},
+	    		error:function(e){
+	    			console.log(e.message);
+	    		} 
+	    	})
+	    	
+	    })
+	    
+	});	
+	</script>
+</html>

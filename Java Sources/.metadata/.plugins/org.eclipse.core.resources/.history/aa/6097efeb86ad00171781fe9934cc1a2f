@@ -1,0 +1,253 @@
+<%@page import="com.in.team2.vo.MPVO"%>
+<%@page import="java.util.List"%>
+<%@page import="com.in.team2.vo.MsgVO"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+
+<script src='/jquery/jquery-3.2.1.js'></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+
+<body>
+
+<div>
+	<div id='menuDiv'>	
+		<jsp:include page="/jsp/menubar/menubar.jsp"></jsp:include>
+	</div>	
+	<div id='chat'>			
+		<jsp:include page="/jsp/chat/chat.jsp"></jsp:include>
+	</div>
+		
+	
+	
+	<script>
+$(function(){
+	$(document).ready(function(){
+		$('#itemName').empty();		
+		$('#itemCategory').val('${mp.itemCategory}'); 
+		
+		
+		if($('#itemCategory').val()=="製造社選択"){			
+			
+		}
+		
+		else{
+			$.ajax({
+				url:'/action/returnItemName?itemCategory='+$("#itemCategory").val(),
+				
+				dataType:'xml',
+				success: function(data){
+					var itemNames = $($(data).find('result')).find('item');
+					var itemName=null;
+					for(i=0;i<itemNames.length;i++){
+						itemName=itemNames[i];
+						$('#itemName').append("<option>"+($(itemName).text()).trim()+"</option>");
+					}
+										
+					$('#itemName').val('${mp.itemName}');
+					$('#itemClass').val('${mp.itemClass}');
+					
+					var searchInterval = document.getElementsByName('searchInterval');
+					searchInterval = searchInterval[0];
+					
+					$(searchInterval).val('${mp.searchInterval}');
+					 
+					
+				},
+				error: function(e){
+					console.log("ERROR! "+e.message)
+				}
+			})
+		}
+	})
+	
+	
+	
+	$('#itemCategory').change(function(){
+		$('#itemName').empty();
+		if($('#itemCategory').val()=="製造社選択"){			
+			
+		}
+		
+		else{
+			$.ajax({
+				url:'/action/returnItemName?itemCategory='+$("#itemCategory").val(),
+				
+				dataType:'xml',
+				success: function(data){
+					var itemNames = $($(data).find('result')).find('item');
+					var itemName=null;
+					for(i=0;i<itemNames.length;i++){
+						itemName=itemNames[i];
+						$('#itemName').append("<option>"+($(itemName).text()).trim()+"</option>");
+					}
+					
+				},
+				error: function(e){
+					console.log("ERROR! "+e.message)
+				}
+			})
+		}
+	})	
+		
+	
+	$('#search').click(function(){
+		if($('#itemCategory').val()!="카테고리 선택"){
+			
+			$('#searchForm').submit();
+		}
+	})
+	
+})
+	
+</script>
+	
+	
+	
+	
+	
+	
+	<div id='content'>
+		<div style='border-bottom-color: black; border-bottom-style: solid; border-bottom-width: 1px; margin-top: 2vh;'>
+			<div style="margin-left: 2% ">
+				<form action='/action/MP_seacrhPrice' method='get' id='searchForm'>
+						<select id='itemCategory' name='itemCategory' style='width: 10%;height: 3vh;'>
+							<option>SAMSUNG</option>
+							<option>APPLE</option>
+							<option>LG</option>
+						</select>
+							
+						<select id='itemName' name='itemName' style='width: 15%;height: 3vh;'>
+						</select>
+							
+						<select id='itemClass' name='itemClass' style='width: 10%;height: 3vh;'>
+							<option selected="selected">A</option>
+							<option>B</option>
+							<option>C</option>
+						</select>
+							
+												
+						<a>今日から</a>
+							
+							
+						<select name='searchInterval' style='width: 10%;height: 3vh;'>
+							<option value='week'>１週間</option>
+							<option value='month'>１ヶ月間</option>
+							<option value='3months'>３ヶ月間</option>
+							<option value='6months'>６ヶ月間</option>
+							<option value='year'>１年間</option>
+						</select>
+							
+							
+						<button type='button' id='search'>相場検索</button>
+					</form>	
+			</div>
+			</div>
+			<div align="center">
+				<div id="container" style="width: 60%; margin-top: 10vh;">
+				</div>
+			</div>
+			
+	</div>
+	<!-- content div ends-->
+		
+			
+		
+		
+		
+		
+		
+		
+	<div id='commercial' align="center">		
+		<jsp:include page="/jsp/ad/ad.jsp"></jsp:include>
+	</div>				
+	<div id='footer' align="center">		
+		<jsp:include page="/jsp/footer/footer.jsp"></jsp:include>
+	</div>
+	
+	
+</div>
+
+
+<script>
+		Highcharts.setOptions({
+		    lang: {
+		        numericSymbols: null //otherwise by default ['k', 'M', 'G', 'T', 'P', 'E']
+		    }
+		});
+		
+		Highcharts.chart('container', {
+
+		    title: {
+		        text: '${mp.itemCategory}会社の${mp.itemName}製品(等級:${mp.itemClass})の${mp.searchInterval} 平均相場'
+		    },
+
+		    xAxis:{
+                categories:[<%
+            		List<MPVO> list = ((MPVO)request.getAttribute("mp")).getResultSet();
+            		for(int i=0;i<list.size();i++){%>
+            		'<%=list.get(i).getSearchInterval()%>'
+            		<%if(i!=list.size()-1){%>
+        				,
+            		<%}%>		        		
+            		<%}
+            	%>]
+            }, 
+
+		    yAxis: {
+		        title: {
+		            text: '平均価格'
+		        }
+		    },
+		    legend: {
+		        layout: 'vertical',
+		        align: 'right',
+		        verticalAlign: 'middle'
+		    },
+
+		      
+		    series: [{
+		        name: null,
+		        data: [
+		        	
+		        	<%
+		        		for(int i=0;i<list.size();i++){%>
+		        		<%=list.get(i).getItemCurPrice()%>
+		        		<%if(i!=list.size()-1){%>
+							,
+		        		<%}%>		        		
+		        		<%}
+		        	%>
+		        	
+		        	]
+		    }],
+
+		    responsive: {
+		        rules: [{
+		            condition: {
+		                maxWidth: 500
+		            },
+		            chartOptions: {
+		                legend: {
+		                    layout: 'horizontal',
+		                    align: 'center',
+		                    verticalAlign: 'bottom'
+		                }
+		            }
+		        }]
+		    }
+
+		});				
+		
+		
+		</script>
+
+</body>
+</html>

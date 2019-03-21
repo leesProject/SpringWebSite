@@ -1,0 +1,14 @@
+ATMARK_RULE=\#ffffff | null | false | false | false | false
+ATTRIBUTE_NAME=\#ffffff | null | false | false | false | false
+COLON=\#ffffff | null | false | false | false | false
+COMMENT=\#ffff80 | null | false | false | false | false
+CURLY_BRACE=\#ffffff | null | false | false | false | false
+ID=\#ffffff | null | false | false | false | false
+MEDIA=\#ffffff | null | false | false | false | false
+NORMAL=\#ffffff | null | false | false | false | false
+PROPERTY_NAME=\#ffffff | null | false | false | false | false
+PROPERTY_VALUE=\#ffffff | null | false | false | false | false
+SEMI_COLON=\#ffffff | null | false | false | false | false
+STRING=\#ffffff | null | false | false | false | false
+URI=\#ffffff | null | false | false | false | false
+eclipse.preferences.version=1

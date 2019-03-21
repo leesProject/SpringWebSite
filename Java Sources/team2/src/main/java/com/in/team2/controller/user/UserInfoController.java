@@ -1,0 +1,339 @@
+package com.in.team2.controller.user;
+
+import java.net.URLEncoder;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.in.team2.RegClass;
+import com.in.team2.bot.SearchPwSendEmail;
+import com.in.team2.controller.annotation.LogInCheck;
+import com.in.team2.service.user.UserInfoService;
+import com.in.team2.vo.UserVO;
+
+@Controller
+@Scope("prototype")
+public class UserInfoController implements Validator{
+	
+	@Autowired
+	private UserInfoService userInfoService;
+	
+	
+	@RequestMapping(value = "/User_idDuplicatedCheck",method=RequestMethod.POST)
+	public void idDuplicatedCheck(HttpServletResponse response,HttpServletRequest request,UserVO user){
+		response.setHeader("Access-Control-Allow-Origin", "*");
+		response.setHeader("Access-Control-Allow-Headers", "X-Requested-With");		
+		request.setAttribute("result", userInfoService.idDuplicatedCheck(user));
+		RequestDispatcher rd = request.getRequestDispatcher("/ajax/idDuplicatedCheck.jsp");
+		try{
+			rd.forward(request, response);
+		}catch(Exception e){}
+	}
+	
+	@RequestMapping(value = "/User_emailDuplicatedCheck",method=RequestMethod.POST)
+	public void emailDuplicatedCheck(HttpServletResponse response,HttpServletRequest request,UserVO user){
+		response.setHeader("Access-Control-Allow-Origin", "*");
+		response.setHeader("Access-Control-Allow-Headers", "X-Requested-With");		
+		request.setAttribute("result", userInfoService.emailDuplicatedCheck(user));
+		RequestDispatcher rd = request.getRequestDispatcher("/ajax/emailDuplicatedCheck.jsp");
+		try{
+			rd.forward(request, response);
+		}catch(Exception e){}		
+	}
+	
+	@RequestMapping(value = "/User_emailDuplicatedCheck2",method=RequestMethod.POST)
+	public void emailDuplicatedCheck2(HttpSession session,HttpServletResponse response,HttpServletRequest request,UserVO user){
+		response.setHeader("Access-Control-Allow-Origin", "*");
+		response.setHeader("Access-Control-Allow-Headers", "X-Requested-With");		
+		user.setUserId((String)session.getAttribute("userId"));
+		request.setAttribute("result", userInfoService.emailDuplicatedCheck2(user));
+		RequestDispatcher rd = request.getRequestDispatcher("/ajax/emailDuplicatedCheck.jsp");
+		try{
+			rd.forward(request, response);
+		}catch(Exception e){}		
+	}
+	
+	
+	
+	@RequestMapping(value = "/User_join",method=RequestMethod.POST)
+	public ModelAndView join( HttpSession session, HttpServletResponse response,UserVO user,BindingResult br,RedirectAttributes redirectAttributes){
+		ModelAndView mav = new ModelAndView();		
+		
+		joinValidate(user, br);
+		
+		if(br.hasErrors()){
+			try{				
+				response.sendRedirect("/jsp/logIn/p_join.jsp?joinError="+URLEncoder.encode("入力形式を確認してください！", "utf-8"));
+			}catch(Exception e){}
+			return null;			
+		}
+		
+		else{
+			int result = userInfoService.join(user);		
+			if(result == 1){
+				mav.setViewName("main/p_join_r");
+				return mav;
+			}else{
+				try{				
+					response.sendRedirect("/jsp/logIn/p_join.jsp?joinError="+URLEncoder.encode("申し訳ございません、加入に失敗しました。後ほど、やり直してください。", "utf-8"));
+				}catch(Exception e){System.out.println("ERROR in join, UserInfo: "+e);}
+				return null;
+			}			
+		}		
+	}
+	
+	
+	@RequestMapping(value = "/User_logIn")
+	public ModelAndView logIn( UserVO user, HttpSession session){
+			ModelAndView mav = new ModelAndView();	
+			UserVO result = null;
+		
+		try {			
+			result = userInfoService.logIn(user);
+			
+			
+			if(result != null){				
+				session.setAttribute("userId", user.getUserId());				
+				mav.setViewName("main/l_main");
+			}else{			
+				mav.setViewName("/user/info/l_logIn_fail");
+				mav.addObject("logInError", "ログインに失敗しました。IDと暗証番号を確認してください。");				
+			}			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return mav;
+	}
+	
+	
+	@RequestMapping(value = "/User_logOut")
+	public String logOut(HttpSession session){
+		session.invalidate();
+		return "redirect:/jsp/main/p_main.jsp";
+	}
+	
+	@LogInCheck
+	@RequestMapping(value = "/User_showDetail")
+	public ModelAndView detail(HttpSession session){
+		ModelAndView mav = new ModelAndView();
+		UserVO user = new UserVO();
+		user.setUserId((String)session.getAttribute("userId"));
+		mav.addObject("user",userInfoService.detail(user));
+		mav.setViewName("/user/info/l_user_detail");
+		return mav;
+	}
+	
+		
+	@LogInCheck
+	@RequestMapping(value = "/User_modifyForm",method=RequestMethod.POST)
+	public ModelAndView modifyForm(HttpSession session, @RequestParam(required=false)String modifyError){
+		ModelAndView mav = new ModelAndView();
+		UserVO user = new UserVO();
+		user.setUserId((String)session.getAttribute("userId"));
+		mav.addObject("user",userInfoService.detail(user));
+		if(modifyError!=null&&!modifyError.equals("")){
+			mav.addObject("modifyError",modifyError);
+		}
+		mav.setViewName("/user/info/l_user_modify");
+		return mav;
+	}
+	
+	@LogInCheck
+	@RequestMapping(value = "/User_modify", method=RequestMethod.POST)
+	public String modify(HttpSession session,HttpServletResponse response,UserVO user,BindingResult br){		
+		modifyValidate(user, br);		
+		if(br.hasErrors()){
+			try{
+				return "redirect:/action/User_modifyForm?modifyError="+URLEncoder.encode("入力形式を確認してください！", "utf-8");
+			}catch(Exception e){}
+			return null;			
+		}
+				
+		user.setUserId((String)session.getAttribute("userId"));		
+		userInfoService.modify(user);
+		return "redirect:/action/User_showDetail";
+	}
+	
+	@LogInCheck
+	@RequestMapping(value = "/User_delete",method=RequestMethod.POST)
+	public void delete(HttpSession session,HttpServletResponse response, HttpServletRequest request, UserVO user){
+		
+		response.setHeader("Access-Control-Allow-Origin", "*");
+		response.setHeader("Access-Control-Allow-Headers", "X-Requested-With");	
+		
+		user.setUserId((String)session.getAttribute("userId"));
+		
+		int result=userInfoService.delete(user);
+		request.setAttribute("result", result);
+		
+		if(result==1){
+			session.invalidate();
+		}
+		
+		RequestDispatcher rd = request.getRequestDispatcher("/ajax/userDelete.jsp");
+		try{
+			rd.forward(request, response);
+		}catch(Exception e){}	
+	}
+
+	
+	
+	@RequestMapping(value = "/User_searchId",method=RequestMethod.POST)
+	public ModelAndView searchId(HttpServletResponse response, UserVO user){
+		ModelAndView mav = new ModelAndView();
+		if(user==null||user.getUserEmail()==null||user.getUserEmail().equals("")){			
+			mav=null;
+			try{
+				response.sendRedirect("/jsp/user/info/l_fid.jsp?searchIdError="+URLEncoder.encode("이메일을 입력해주세요!","UTF-8"));
+			}catch(Exception e){}
+			
+		}
+		
+		else{
+			user=userInfoService.searchId(user);
+			if(user==null){
+				mav=null;
+				try{
+					response.sendRedirect("/jsp/user/info/l_fid.jsp?searchIdError="+URLEncoder.encode("加入されたメールが存在しません！","UTF-8"));
+				}catch(Exception e){}
+			}
+			else{
+				mav.addObject("userId",user.getUserId());
+				mav.setViewName("/user/info/l_fid_r");								
+			}
+		}		
+		return mav;
+	}
+	
+	
+	
+	@RequestMapping(value = "/User_searchPw",method=RequestMethod.POST)
+	public ModelAndView searchPw(HttpServletResponse response, UserVO user){
+		ModelAndView mav = new ModelAndView();
+		if(user==null||user.getUserId()==null||user.getUserId().equals("")){			
+			mav=null;
+			try{
+				response.sendRedirect("/jsp/user/info/l_fpw.jsp?searchPwError="+URLEncoder.encode("아이디를 입력해주세요!","UTF-8"));
+			}catch(Exception e){}
+			
+		}
+		
+		
+		else if(user.getUserEmail()==null||user.getUserEmail().equals("")){
+			mav=null;
+			try{
+				response.sendRedirect("/jsp/user/info/l_fpw.jsp?searchPwError="+URLEncoder.encode("이메일을 입력해주세요!","UTF-8"));
+			}catch(Exception e){}
+		}
+		
+		else{
+			user = userInfoService.searchPw(user);
+			if(user==null){
+				mav=null;
+				try{
+					response.sendRedirect("/jsp/user/info/l_fpw.jsp?searchPwError="+URLEncoder.encode("暗証番号を探せません。IDと暗証番号を確認してください。","UTF-8"));
+				}catch(Exception e){}
+			}
+			else{			
+				SearchPwSendEmail emailSender = new SearchPwSendEmail(user.getUserId(), user.getUserEmail(), user.getUserPw());
+				mav.setViewName("/user/info/l_fpw_r");			
+			}
+		}		
+		return mav;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	@Override
+	public boolean supports(Class<?> arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public void joinValidate(UserVO user, Errors error) {
+		
+		if(user==null){
+			error.rejectValue("user","null");
+		}
+		
+		else if(Pattern.matches(RegClass.getUserId(), user.getUserId())==false){
+			error.rejectValue("userId","error");
+		}
+		
+		else if(Pattern.matches(RegClass.getUserPw(), user.getUserPw())==false){
+			error.rejectValue("userPw","error");
+		}
+		
+		else if(Pattern.matches(RegClass.getUserName(), user.getUserName())==false){
+			error.rejectValue("userName","error");		
+		}
+				
+		else if(Pattern.matches(RegClass.getUserEmail(), user.getUserEmail())==false){
+			error.rejectValue("userEmail","error");
+		}
+				
+		else if(Pattern.matches(RegClass.getUserPhone(), user.getUserPhone())==false){
+			error.rejectValue("userPhone","error");
+		}		
+	}
+	
+	
+	
+	
+	public void modifyValidate(UserVO user, Errors error) {
+		
+		if(user==null){
+			error.rejectValue("user","null");
+		}
+		
+		else if(Pattern.matches(RegClass.getUserPw(), user.getUserPw())==false){
+			error.rejectValue("userPw","error");
+		}
+				
+		else if(Pattern.matches(RegClass.getUserName(), user.getUserName())==false){
+			error.rejectValue("userName","error");		
+		}
+				
+		else if(Pattern.matches(RegClass.getUserEmail(), user.getUserEmail())==false){
+			error.rejectValue("userEmail","error");
+		}
+				
+		else if(Pattern.matches(RegClass.getUserPhone(), user.getUserPhone())==false){
+			error.rejectValue("userPhone","error");
+		}		
+	}
+	
+	
+	
+	
+	
+
+	@Override
+	public void validate(Object arg0, Errors arg1) {
+		// TODO Auto-generated method stub		
+	}
+}

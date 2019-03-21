@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  
+  
+<mapper namespace="login">
+	
+	
+	<!-- 아이디 중복 체크 -->
+	<select id="idDuplicatedCheck" resultType="com.in.team2.vo.UserVO" parameterType="com.in.team2.vo.UserVO"  >
+		SELECT * FROM users WHERE user_id = #{userId}
+	</select>
+	
+	<!-- 이메일 중복 체크 -->
+	<select id="emailDuplicatedCheck" resultType="com.in.team2.vo.UserVO" parameterType="com.in.team2.vo.UserVO"  >
+		SELECT * FROM users WHERE user_email = #{userEmail}
+	</select>
+	
+	
+	<!-- 개인정보 수정 시 이메일 중복 체크 -->
+	<select id="emailDuplicatedCheck2" resultType="com.in.team2.vo.UserVO" parameterType="com.in.team2.vo.UserVO"  >
+		SELECT * FROM users WHERE user_email = #{userEmail} AND user_id != #{userId}
+	</select>
+	
+	
+ 	<!-- 회원가입 -->
+ 	<insert id='join' parameterType="com.in.team2.vo.UserVO">
+		INSERT INTO USERS(user_id, user_pw, user_num, user_name, user_email, user_phone, reg_date) 
+		VALUES(#{userId}, #{userPw}, USERS_SEQ.NEXTVAL, #{userName}, #{userEmail}, #{userPhone}, SYSDATE)
+	</insert>
+	
+	<!-- 로그인 -->
+	<select id="login" resultType="com.in.team2.vo.UserVO" parameterType="com.in.team2.vo.UserVO"  >
+		SELECT * FROM users WHERE user_id = #{userId} AND user_pw = #{userPw}
+	</select>
+	
+ 	<!-- 회원정보 -->
+	<select id="detail" resultType="com.in.team2.vo.UserVO" parameterType="com.in.team2.vo.UserVO"  >
+		SELECT * FROM users WHERE user_id = #{userId}
+	</select>
+	
+	
+	<!-- 회원정보 수정 -->
+	<update id="modify"  parameterType="com.in.team2.vo.UserVO"  >
+		UPDATE users SET user_email=#{userEmail}, user_phone=#{userPhone}, USER_NAME=#{userName}, USER_PW=#{userPw} WHERE user_id = #{userId}
+	</update>
+	
+	
+	<!-- 회원삭제 = 탈퇴 -->
+	<delete id="delete"   parameterType="com.in.team2.vo.UserVO" >
+		DELETE FROM users WHERE user_id=#{userId} AND user_pw=#{userPw} AND user_name=#{userName}
+	</delete>
+	
+	
+	<!-- 아이디 찾기 -->
+	<select id="searchId" resultType="com.in.team2.vo.UserVO" parameterType="com.in.team2.vo.UserVO"  >
+		SELECT * FROM users WHERE user_email = #{userEmail}
+	</select>
+	
+	<!-- 비밀번호 찾기 -->
+	<update id="searchPw" parameterType="com.in.team2.vo.UserVO"  >
+		UPDATE USERS SET USER_PW=#{userPw} WHERE user_email = #{userEmail} AND USER_ID=#{userId}
+	</update>
+	
+	
+	
+    
+</mapper>
+

@@ -1,0 +1,70 @@
+package com.in.team2.service.mp;
+
+import com.in.team2.dao.mp.MPDAO;
+import com.in.team2.vo.MPVO;
+
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import org.apache.log4j.helpers.DateTimeDateFormat;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Transactional
+@Service("mpServiceService")
+@Scope("prototype")
+public class MPServiceImpl implements MPService
+{
+	@Autowired
+	private MPDAO mpDAO;
+  
+  public MPVO search(MPVO mp)
+  {
+		mp=mpDAO.search(mp);
+		
+				
+		/*LocalDate start = LocalDate.parse(mp.getStart());
+		LocalDate end = LocalDate.parse(mp.getEnd());	
+		
+		ArrayList<MPVO> list =new ArrayList<MPVO>();
+		MPVO temp=null;
+		
+		for (LocalDate date = start; date.isBefore(end); date = date.plusDays(1))
+		{
+			temp= new MPVO();
+			temp.setItemCurPrice(0);
+			temp.setSoldDate(Timestamp.valueOf(date.atStartOfDay()));
+			list.add(temp);
+		}
+		
+		temp= new MPVO();
+		temp.setItemCurPrice(0);
+		temp.setSoldDate(Timestamp.valueOf(end.atStartOfDay()));
+		list.add(temp);
+		
+		int tempIndex=0;
+		
+		for(int i=0;i<mp.getResultSet().size();i++){
+			MPVO tempMPVO = mp.getResultSet().get(i);
+			System.out.println("템프: "+tempMPVO.getSoldDate());
+			
+			for(int j=tempIndex;j<list.size();j++){
+				System.out.println("새 리스트: "+list.get(j).getSoldDate());
+				if(tempMPVO.getSoldDate().equals(list.get(j).getSoldDate())){
+					list.get(j).setItemCurPrice(tempMPVO.getItemCurPrice());
+					
+					tempIndex=j;
+					break;
+				}			
+			}		
+		}
+	
+		mp.setResultSet(list);*/
+    return mp;
+  }
+}

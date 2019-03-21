@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="msg">
+	
+		
+	
+	<resultMap type="com.in.team2.vo.MsgVO" id="msg"></resultMap>
+	
+	<select id='showRMSGList' statementType="CALLABLE" parameterType="com.in.team2.vo.MsgVO">
+		{ CALL 
+	DECLARE
+		dataNum NUMBER;
+		v_rc SYS_REFCURSOR;
+		v_int INTEGER;
+	BEGIN 				
+		SELECT COUNT(*) into dataNum FROM RECEIVED_MSG WHERE RECEIVER_ID=#{receiverId};		
+		#{dataNum, mode=OUT, jdbcType=NUMERIC, javaType=int} := dataNum;		
+		OPEN v_rc FOR 
+			SELECT * FROM(
+						SELECT rmsg1.* ,ROWNUM AS RN FROM(
+								SELECT * FROM RECEIVED_MSG WHERE RECEIVER_ID=#{receiverId} ORDER BY REG_DATE DESC 
+						)rmsg1
+					) 
+			WHERE RN BETWEEN (#{pageNum}-1)*#{numbs}+1 AND #{pageNum}*#{numbs};
+			
+		#{resultSet, mode=OUT, jdbcType=CURSOR, javaType=ResultSet, resultMap=msg} := v_rc; 
+		
+	END }
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	<select id='showRMSGDetail' statementType="CALLABLE" parameterType="com.in.team2.vo.MsgVO">
+		{ CALL 
+	DECLARE		
+		v_rc SYS_REFCURSOR;
+	BEGIN
+			
+		update RECEIVED_MSG SET MSG_CHECK = 'T'
+		WHERE RECEIVER_ID=#{receiverId} AND MSG_NUM=#{msgNum};
+		
+		
+		OPEN v_rc FOR 
+			SELECT * FROM RECEIVED_MSG
+			WHERE RECEIVER_ID=#{receiverId} AND MSG_NUM=#{msgNum};			
+		#{resultSet, mode=OUT, jdbcType=CURSOR, javaType=ResultSet, resultMap=msg} := v_rc; 
+	END } 
+	</select>	
+	
+	<delete id='deleteReceivedMsgDetail' parameterType="com.in.team2.vo.MsgVO">
+		DELETE FROM RECEIVED_MSG WHERE RECEIVER_ID=#{receiverId} AND MSG_NUM=${msgNum}
+	</delete>
+	
+	
+	
+	
+	
+	
+	
+	
+	<select id='showSMSGList' statementType="CALLABLE" parameterType="com.in.team2.vo.MsgVO">
+		{ CALL 
+	DECLARE
+		dataNum NUMBER;
+		v_rc SYS_REFCURSOR;
+	BEGIN 				
+		SELECT COUNT(*) into dataNum FROM SENT_MSG WHERE SENDER_ID=#{senderId};		
+		#{dataNum, mode=OUT, jdbcType=NUMERIC, javaType=int} := dataNum;		
+		OPEN v_rc FOR 
+			SELECT * FROM(
+						SELECT smsg1.* ,ROWNUM AS RN FROM(
+								SELECT * FROM SENT_MSG WHERE SENDER_ID=#{senderId} ORDER BY REG_DATE DESC 
+						)smsg1
+					) 
+			WHERE RN BETWEEN (#{pageNum}-1)*#{numbs}+1 AND #{pageNum}*#{numbs};
+			
+		#{resultSet, mode=OUT, jdbcType=CURSOR, javaType=ResultSet, resultMap=msg} := v_rc; 		
+	END } 
+	</select>
+	
+	
+	
+	<select id='showSMSGDetail'  parameterType="com.in.team2.vo.MsgVO" resultType="com.in.team2.vo.MsgVO">	
+	SELECT * FROM SENT_MSG	WHERE SENDER_ID=#{senderId} AND MSG_NUM=#{msgNum}
+	</select>	
+	
+	<delete id='deleteSendedMsgDetail' parameterType="com.in.team2.vo.MsgVO">
+		DELETE FROM SENT_MSG WHERE SENDER_ID=#{senderId} AND MSG_NUM=${msgNum}
+	</delete>
+	
+	
+	
+	
+	
+	
+	
+	<select id='createMsg' parameterType="com.in.team2.vo.MsgVO" statementType="CALLABLE">
+	{ call
+		declare
+			v_result number:=0;
+		begin
+			INSERT INTO SENT_MSG (MSG_NUM,MSG_TITLE,MSG_CONTENT,MSG_CHECK,REG_DATE,SENDER_ID,RECEIVER_ID) VALUES(SENT_MSG_SEQ.NEXTVAL,#{msgTitle},#{msgContent},'F',SYSDATE,#{senderId},#{receiverId});
+			v_result:=v_result+(sql%rowcount);
+			INSERT INTO RECEIVED_MSG (MSG_NUM,MSG_TITLE,MSG_CONTENT,MSG_CHECK,REG_DATE,SENDER_ID,RECEIVER_ID) VALUES(RECEIVED_MSG_SEQ.NEXTVAL,#{msgTitle},#{msgContent},'F',SYSDATE,#{senderId},#{receiverId});
+			v_result:=v_result+(sql%rowcount);
+			#{result, mode=OUT, jdbcType=NUMERIC, javaType=int} := v_result;	
+			
+		end
+	}	
+	</select>	
+	
+	
+    
+</mapper>
+

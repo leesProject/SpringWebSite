@@ -1,0 +1,160 @@
+<%@page import="com.in.team2.vo.MsgVO"%>
+<%@page import="java.util.ArrayList"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Insert title here</title>
+</head>
+
+<style>
+.pageIndex:HOVER {cursor: pointer}
+.msgTitleList:HOVER {background-color: gray; cursor: pointer;}
+</style>
+
+
+<script src='/jquery/jquery-3.2.1.js'></script>
+
+<script>
+var pageNum = 1;
+<%if(request.getAttribute("msg")!=null&&((MsgVO)request.getAttribute("msg")).getPageNum()!=0){%>
+	pageNum=${msg.pageNum}	
+<%}%>
+
+
+
+	
+	
+</script>
+
+<body>
+
+<div>
+	<div id='menuDiv'>	
+		<jsp:include page="/jsp/menubar/menubar.jsp"></jsp:include>
+	</div>	
+	<div id='chat'>			
+		<jsp:include page="/jsp/chat/chat.jsp"></jsp:include>
+	</div>
+
+		
+	
+	
+	
+	
+	
+	
+	
+	<div id='content'>		
+		<div style='border-bottom-color: black; border-bottom-style: solid; border-bottom-width: 1px; margin-top: 2vh; margin-left: 2%;'>
+			
+			<div>
+			<button id='showRMsgList'>受信箱</button>
+			<button id='showSMsgList'>送信箱</button>
+		</div><br>
+		
+		<script>
+		$('#showRMsgList').click(function(){
+		
+				document.location.href='/action/Msg_showRMsgList';
+			
+		})
+		
+		
+		$('#showSMsgList').click(function(){
+		
+				document.location.href='/action/Msg_showSMsgList';
+			
+		})
+		</script>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<form id='msgReplyOrDelete'>
+				
+				<input type='hidden' value='${msg.msgNum}' name='msgNum' id='msgNum'>
+				<input type='hidden' name='pageNum' id='pageNum'>
+				
+							
+				<button id='replyBtn' type='button'>返事する</button>
+				<button id='deleteBtn' type='button'>削除</button>
+				<button id='returnBtn' type='button'>戻る</button>
+			</form>
+		</div>	
+		
+		
+		
+		<script>
+			$('#replyBtn').click(function(){
+				document.location.href='/jsp/user/msg/l_msg_create.jsp?receiverId='+encodeURIComponent('${msg.senderId}')+'&pageNum='+pageNum;
+			})
+			$('#returnBtn').click(function(){
+				document.location.href='/action/Msg_showRMsgList?pageNum='+pageNum;
+			})
+			$('#deleteBtn').click(function(){
+				if(confirm("このメールを消しますか。")){
+					$('#pageNum').val(pageNum);
+					$('#msgReplyOrDelete').attr('method','post');
+					$('#msgReplyOrDelete').attr('action','/action/Msg_deleteRMsg');
+					$('#msgReplyOrDelete').submit();
+				}
+			})
+			
+		</script>
+		
+		
+		<div class='msgDiv' style="padding-bottom: 10vh;">
+		
+			<div class='msgDetail'>
+				<div class='msgTitle'>
+					제목: ${msg.msgTitle}
+				</div>
+				
+				<div class='msgSender'>
+					보낸 사람:  ${msg.senderId}<br>
+					받은 날짜:  ${msg.regDate}
+				</div>
+			</div>	
+			
+			<div class='msgContentDiv' style="padding-top: 10vh;">${msg.msgContent}</div>
+					
+			
+		</div>		
+		
+		
+	</div>
+	<!-- content div ends-->
+		
+		
+	<div id='commercial' align="center">		
+		<jsp:include page="/jsp/ad/ad.jsp"></jsp:include>
+	</div>				
+	<div id='footer' align="center">		
+		<jsp:include page="/jsp/footer/footer.jsp"></jsp:include>
+	</div>		
+		
+		
+		
+		
+		
+		
+	
+	
+</div>
+
+</body>
+</html>
